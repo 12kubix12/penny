@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Period Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            min-height: 600px;
+        }
+
+        .calendar-section {
+            flex: 2;
+            padding: 30px;
+            min-width: 600px;
+        }
+
+        .sidebar {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 30px;
+            min-width: 300px;
+            border-left: 1px solid #dee2e6;
+        }
+
+        .calendar-grid {
+            display: grid;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .month-calendar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .month-header {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .day:hover {
+            background: #e9ecef;
+        }
+
+        .day.other-month {
+            color: #ccc;
+        }
+
+        .day.period-day {
+            background: #ff6b8a;
+            color: white;
+        }
+
+        .day.predicted-range {
+            background: rgba(255, 182, 193, 0.3);
+            border: 2px dashed #ff69b4;
+        }
+
+        .day.most-likely {
+            background: rgba(255, 105, 180, 0.5);
+            border: 2px solid #ff1493;
+        }
+
+        .day.today {
+            border: 3px solid #667eea;
+            font-weight: bold;
+        }
+
+        .stats-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .stats-panel h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .symptoms-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .symptom-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .symptom-checkbox input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .legend {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .legend h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .calendar-section {
+                min-width: unset;
+                padding: 20px;
+            }
+            
+            .sidebar {
+                min-width: unset;
+                border-left: none;
+                border-top: 1px solid #dee2e6;
+            }
+            
+            .nav-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌸 Private Period Tracker</h1>
+            <p>Your personal, secure cycle tracking</p>
+        </div>
+
+        <div class="nav-controls">
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="navigateMonth(-1)">← Previous Month</button>
+                <button class="btn btn-secondary" onclick="navigateMonth(1)">Next Month →</button>
+                <button class="btn btn-info" onclick="goToToday()">Today</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-success" onclick="exportData()">Export Data</button>
+                <button class="btn btn-primary" onclick="showImportModal()">Import Data</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="calendar-section">
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendars will be generated here -->
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="stats-panel">
+                    <h3>📊 Cycle Stats</h3>
+                    <div class="stat-item">
+                        <span>Days since last period:</span>
+                        <span class="stat-value" id="daysSince">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Average cycle length:</span>
+                        <span class="stat-value" id="avgCycle">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Average period length:</span>
+                        <span class="stat-value" id="avgPeriod">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Next period (estimated):</span>
+                        <span class="stat-value" id="nextPeriod">--</span>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>📝 Add Period</h3>
+                    <div class="form-group">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Duration (days):</label>
+                        <input type="number" id="duration" min="1" max="10" value="5">
+                    </div>
+                    <button class="btn btn-primary" onclick="addPeriod()">Add Period</button>
+                </div>
+
+                <div class="form-section">
+                    <h3>😔 Log Symptoms</h3>
+                    <div class="form-group">
+                        <label for="symptomDate">Date:</label>
+                        <input type="date" id="symptomDate">
+                    </div>
+                    <div class="symptoms-grid">
+                        <div class="symptom-checkbox">
+                            <input type="checkbox" id="weightGain" value="weight-gain">
+                            <label for="weightGain">Weight Gain</label>
+                        </div>
+                        <div class="symptom-checkbox">
+                            <input type="checkbox" id="irritability" value="irritability">
+                            <label for="irritability">Irritability</label>
+                        </div>
+                        <div class="symptom-checkbox">
+                            <input type="checkbox" id="tiredness" value="tiredness">
+                            <label for="tiredness">Tiredness</label>
+                        </div>
+                        <div class="symptom-checkbox">
+                            <input type="checkbox" id="sadness" value="sadness">
+                            <label for="sadness">Sadness</label>
+                        </div>
+                        <div class="symptom-checkbox">
+                            <input type="checkbox" id="hungry" value="hungry">
+                            <label for="hungry">Hungry</label>
+                        </div>
+                        <div class="symptom-checkbox">
+                            <input type="checkbox" id="focus" value="focus">
+                            <label for="focus">Focus Issues</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addSymptoms()" style="margin-top: 15px;">Log Symptoms</button>
+                </div>
+
+                <div class="legend">
+                    <h4>📌 Legend</h4>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff6b8a;"></div>
+                        <span>Period Days</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(255, 182, 193, 0.3); border: 2px dashed #ff69b4;"></div>
+                        <span>Predicted Range</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(255, 105, 180, 0.5); border: 2px solid #ff1493;"></div>
+                        <span>Most Likely</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="border: 3px solid #667eea;"></div>
+                        <span>Today</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h3>Import Data</h3>
+            <p>Select a JSON file to import your period tracking data:</p>
+            <input type="file" id="importFile" accept=".json">
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="importData()">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let periods = [];
+        let symptoms = [];
+        let currentDate = new Date();
+        let displayDate = new Date();
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            updateCalendar();
+            updateStats();
+            
+            // Set default dates to today
+            document.getElementById('startDate').value = formatDate(new Date());
+            document.getElementById('symptomDate').value = formatDate(new Date());
+        });
+
+        // Data management functions
+        function saveData() {
+            localStorage.setItem('periodTracker', JSON.stringify({
+                periods: periods,
+                symptoms: symptoms
+            }));
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem('periodTracker');
+            if (stored) {
+                const data = JSON.parse(stored);
+                periods = data.periods || [];
+                symptoms = data.symptoms || [];
+            }
+        }
+
+        function exportData() {
+            const data = {
+                periods: periods,
+                symptoms: symptoms,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `period-tracker-${formatDate(new Date())}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showImportModal() {
+            document.getElementById('importModal').style.display = 'block';
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+            document.getElementById('importFile').value = '';
+        }
+
+        function importData() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) {
+                alert('Please select a file to import.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.periods && data.symptoms) {
+                        periods = data.periods;
+                        symptoms = data.symptoms;
+                        saveData();
+                        updateCalendar();
+                        updateStats();
+                        closeImportModal();
+                        alert('Data imported successfully!');
+                    } else {
+                        alert('Invalid file format.');
+                    }
+                } catch (error) {
+                    alert('Error reading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Period and symptom management
+        function addPeriod() {
+            const startDate = document.getElementById('startDate').value;
+            const duration = parseInt(document.getElementById('duration').value);
+
+            if (!startDate || !duration) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const period = {
+                startDate: startDate,
+                duration: duration,
+                id: Date.now()
+            };
+
+            periods.push(period);
+            periods.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            
+            saveData();
+            updateCalendar();
+            updateStats();
+            
+            // Clear form
+            document.getElementById('startDate').value = formatDate(new Date());
+            document.getElementById('duration').value = '5';
+        }
+
+        function addSymptoms() {
+            const symptomDate = document.getElementById('symptomDate').value;
+            if (!symptomDate) {
+                alert('Please select a date.');
+                return;
+            }
+
+            const symptomCheckboxes = document.querySelectorAll('.symptom-checkbox input[type="checkbox"]');
+            const selectedSymptoms = [];
+            
+            symptomCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedSymptoms.push(checkbox.value);
+                }
+            });
+
+            if (selectedSymptoms.length === 0) {
+                alert('Please select at least one symptom.');
+                return;
+            }
+
+            // Remove existing symptoms for this date
+            symptoms = symptoms.filter(s => s.date !== symptomDate);
+            
+            // Add new symptoms
+            symptoms.push({
+                date: symptomDate,
+                symptoms: selectedSymptoms,
+                id: Date.now()
+            });
+
+            symptoms.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            saveData();
+            updateCalendar();
+            
+            // Clear form
+            symptomCheckboxes.forEach(checkbox => checkbox.checked = false);
+            document.getElementById('symptomDate').value = formatDate(new Date());
+        }
+
+        // Calendar functions
+        function updateCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+
+            // Show two months
+            const month1 = new Date(displayDate);
+            const month2 = new Date(displayDate);
+            month2.setMonth(month2.getMonth() + 1);
+
+            calendarGrid.appendChild(createMonthCalendar(month1));
+            calendarGrid.appendChild(createMonthCalendar(month2));
+        }
+
+        function createMonthCalendar(date) {
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'month-calendar';
+
+            const monthHeader = document.createElement('div');
+            monthHeader.className = 'month-header';
+            monthHeader.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            monthDiv.appendChild(monthHeader);
+
+            const calendarDays = document.createElement('div');
+            calendarDays.className = 'calendar-days';
+
+            // Day headers
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = day;
+                calendarDays.appendChild(dayHeader);
+            });
+
+            // Get first day of month and days in month
+            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+            // Create 42 days (6 weeks)
+            for (let i = 0; i < 42; i++) {
+                const dayDate = new Date(startDate);
+                dayDate.setDate(startDate.getDate() + i);
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+                dayDiv.textContent = dayDate.getDate();
+                
+                // Add classes based on conditions
+                if (dayDate.getMonth() !== date.getMonth()) {
+                    dayDiv.classList.add('other-month');
+                }
+                
+                if (isToday(dayDate)) {
+                    dayDiv.classList.add('today');
+                }
+                
+                if (isPeriodDay(dayDate)) {
+                    dayDiv.classList.add('period-day');
+                }
+                
+                const prediction = getPredictionForDate(dayDate);
+                if (prediction === 'range') {
+                    dayDiv.classList.add('predicted-range');
+                } else if (prediction === 'likely') {
+                    dayDiv.classList.add('most-likely');
+                }
+                
+                calendarDays.appendChild(dayDiv);
+            }
+
+            monthDiv.appendChild(calendarDays);
+            return monthDiv;
+        }
+
+        // Helper functions
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function isToday(date) {
+            return formatDate(date) === formatDate(new Date());
+        }
+
+        function isPeriodDay(date) {
+            const dateStr = formatDate(date);
+            return periods.some(period => {
+                const start = new Date(period.startDate);
+                const end = new Date(start);
+                end.setDate(end.getDate() + period.duration - 1);
+                
+                return date >= start && date <= end;
+            });
+        }
+
+        function getPredictionForDate(date) {
+            if (periods.length < 2) return null;
+            
+            const stats = calculateStats();
+            if (!stats.avgCycle) return null;
+            
+            const lastPeriod = periods[periods.length - 1];
+            const lastPeriodDate = new Date(lastPeriod.startDate);
+            
+            const earliestNext = new Date(lastPeriodDate);
+            earliestNext.setDate(earliestNext.getDate() + stats.shortestCycle);
+            
+            const latestNext = new Date(lastPeriodDate);
+            latestNext.setDate(latestNext.getDate() + stats.longestCycle);
+            
+            const mostLikelyStart = new Date(lastPeriodDate);
+            mostLikelyStart.setDate(mostLikelyStart.getDate() + Math.round(stats.avgCycle));
+            
+            const mostLikelyEnd = new Date(mostLikelyStart);
+            mostLikelyEnd.setDate(mostLikelyEnd.getDate() + Math.round(stats.avgPeriod) - 1);
+            
+            const dateStr = formatDate(date);
+            const mostLikelyStartStr = formatDate(mostLikelyStart);
+            const mostLikelyEndStr = formatDate(mostLikelyEnd);
+            
+            // Check if in most likely period range
+            if (dateStr >= mostLikelyStartStr && dateStr <= mostLikelyEndStr) {
+                return 'likely';
+            }
+            
+            // Check if in predicted range
+            if (date >= earliestNext && date <= latestNext) {
+                return 'range';
+            }
+            
+            return null;
+        }
+
+        function calculateStats() {
+            if (periods.length === 0) return {};
+            
+            const stats = {
+                daysSinceLastPeriod: 0,
+                avgCycle: 0,
+                avgPeriod: 0,
+                shortestCycle: Infinity,
+                longestCycle: 0,
+                nextPeriodDate: null
+            };
+            
+            // Calculate days since last period
+            if (periods.length > 0) {
+                const lastPeriod = periods[periods.length - 1];
+                const lastPeriodDate = new Date(lastPeriod.startDate);
+                const today = new Date();
+                stats.daysSinceLastPeriod = Math.floor((today - lastPeriodDate) / (1000 * 60 * 60 * 24));
+            }
+            
+            // Calculate average period length
+            if (periods.length > 0) {
+                const totalDuration = periods.reduce((sum, period) => sum + period.duration, 0);
+                stats.avgPeriod = totalDuration / periods.length;
+            }
+            
+            // Calculate cycle lengths and averages
+            if (periods.length > 1) {
+                const cycleLengths = [];
+                for (let i = 1; i < periods.length; i++) {
+                    const prevDate = new Date(periods[i-1].startDate);
+                    const currDate = new Date(periods[i].startDate);
+                    const cycleLength = Math.floor((currDate - prevDate) / (1000 * 60 * 60 * 24));
+                    cycleLengths.push(cycleLength);
+                }
+                
+                stats.avgCycle = cycleLengths.reduce((sum, length) => sum + length, 0) / cycleLengths.length;
+                stats.shortestCycle = Math.min(...cycleLengths);
+                stats.longestCycle = Math.max(...cycleLengths);
+                
+                // Predict next period
+                const lastPeriodDate = new Date(periods[periods.length - 1].startDate);
+                stats.nextPeriodDate = new Date(lastPeriodDate);
+                stats.nextPeriodDate.setDate(stats.nextPeriodDate.getDate() + Math.round(stats.avgCycle));
+            }
+            
+            return stats;
+        }
+
+        function updateStats() {
+            const stats = calculateStats();
+            
+            document.getElementById('daysSince').textContent = stats.daysSinceLastPeriod || '--';
+            document.getElementById('avgCycle').textContent = stats.avgCycle ? Math.round(stats.avgCycle) + ' days' : '--';
+            document.getElementById('avgPeriod').textContent = stats.avgPeriod ? Math.round(stats.avgPeriod) + ' days' : '--';
+            document.getElementById('nextPeriod').textContent = stats.nextPeriodDate ? 
+                stats.nextPeriodDate.toLocaleDateString() : '--';
+        }
+
+        // Navigation functions
+        function navigateMonth(direction) {
+            displayDate.setMonth(displayDate.getMonth() + direction);
+            updateCalendar();
+        }
+
+        function goToToday() {
+            displayDate = new Date();
+            updateCalendar();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('importModal');
+            if (event.target === modal) {
+                closeImportModal();
+            }
+        }
+    </script>
+</body>
+</html>
